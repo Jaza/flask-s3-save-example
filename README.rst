@@ -1,7 +1,9 @@
 Flask S3 Save Example
 =====================
 
-An example Flask app that uses s3-saver, url-for-s3, flask-thumbnails-s3, and flask-admin-s3-upload to store and retrieve files on Amazon S3.
+An example Flask app that uses `s3-saver <https://github.com/Jaza/s3-saver>`_, `url-for-s3 <https://github.com/Jaza/url-for-s3>`_, `flask-thumbnails-s3 <https://github.com/Jaza/flask-thumbnails-s3>`_, and `flask-admin-s3-upload <https://github.com/Jaza/flask-admin-s3-upload>`_ to store and retrieve files on Amazon S3.
+
+This app lets you upload, re-upload, and delete a single image. By changing a few lines of config, the image will be stored either locally, or in a S3 bucket of your choice.
 
 
 Usage
@@ -65,3 +67,9 @@ Usage
     ::
 
         http://localhost:5000/login/?next=/admin/
+
+
+Configuration
+-------------
+
+In ``project/settings.py``, change ``USE_S3`` to ``False`` to store the image locally. If using S3, you'll need to set ``S3_BUCKET_NAME``, ``AWS_ACCESS_KEY_ID``, and ``AWS_SECRET_ACCESS_KEY`` to point to a bucket that the given AWS credentials can read / write to.
