@@ -20,7 +20,7 @@ mod = Blueprint('foo', __name__)
 
 @mod.route('/', methods=['GET', 'POST'])
 def home():
-    """Displays to Flask S3 Save Example home page."""
+    """Displays the Flask S3 Save Example home page."""
 
     model = Thingy.query.first() or Thingy()
 
