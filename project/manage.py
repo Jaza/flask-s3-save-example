@@ -3,8 +3,9 @@
 from __future__ import print_function
 
 # Set the path
-import os, sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from os import path
+import sys
+sys.path.append(path.abspath(path.join(path.dirname(__file__), '..')))
 
 from flask_script import Manager, Server
 from flask_script.commands import InvalidCommand

@@ -1,0 +1,33 @@
+{% extends "bootstrap/base.html" %}
+{% import 'bootstrap/utils.html' as utils %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'macros/imagethumb.html' as imagethumb %}
+
+{% block title %}{{ config.SITE_NAME }}{% endblock title %}
+
+{% block content %}
+<div class="container-fluid" style="max-width: 960px">
+  <div class="row">
+    <div class="col-sm-12">
+
+<h1><a href="{{ url_for('foo.home') }}">{{ config.SITE_NAME }}</a></h1>
+
+{{ utils.flashed_messages(container=False) }}
+
+<form class="form" method="post" enctype="multipart/form-data" action="{{ url_for('foo.home') }}" role="form">
+  {{ form.hidden_tag() }}
+  {{ wtf.form_errors(form, hiddens="only") }}
+
+  {{ imagethumb.field(form.image, model.image, delete_field=(model.image and form.image_delete or none), storage_type=model.image_storage_type, bucket_name=model.image_storage_bucket_name) }}
+
+  {% if model.image %}
+  <p><a href="{{ model.image_url_storageaware }}">View original</a></p>
+  {% endif %}
+
+  <button type="submit" class="btn btn-default">Save</button>
+</form>
+
+    </div>
+  </div>
+</div>
+{% endblock content %}

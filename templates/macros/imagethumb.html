@@ -1,0 +1,36 @@
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% macro field(field, image, size='100x100', crop='fit', quality=85, alt='', title='', delete_field=none, storage_type=none, bucket_name=none) %}
+
+<div class="form-group {% if field.errors %} has-error{% endif %}">
+  {{field.label(class="control-label")|safe}}
+
+  <div>
+    {% if image %}
+    <div class="pull-left" style="margin-right: 1em">
+    <img src="{{ image|thumbnail(size, crop=crop, quality=quality, storage_type=storage_type, bucket_name=bucket_name) }}" alt="{{ alt }}" title="{{ title }}" />
+    </div>
+    {% endif %}
+
+    {% if image %}<div class="pull-left">{% endif %}
+    {{field(class="form-control", **kwargs)|safe}}
+
+    {% if delete_field %}
+    {{ wtf.form_field(delete_field) }}
+    {% endif %}
+
+    {% if image %}</div>{% endif %}
+  </div>
+
+  <div class="clearfix"></div>
+
+  {%- if field.errors %}
+    {%- for error in field.errors %}
+      <p class="help-block">{{error}}</p>
+    {%- endfor %}
+  {%- elif field.description -%}
+    <p class="help-block">{{field.description|safe}}</p>
+  {%- endif %}
+</div>
+{% endmacro %}
+
