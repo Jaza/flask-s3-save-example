@@ -30,6 +30,8 @@ def home():
         image_orig = model.image
         image_storage_type_orig = model.image_storage_type
         image_bucket_name_orig = model.image_storage_bucket_name
+
+        # Initialise s3-saver.
         image_saver = S3Saver(
             storage_type=app.config['USE_S3'] and 's3' or None,
             bucket_name=app.config['S3_BUCKET_NAME'],
@@ -54,47 +56,80 @@ def home():
                         app.config['THINGY_IMAGE_RELATIVE_PATH']),
                     filename))
 
+            # Best to pass in a BytesIO to S3Saver, containing the
+            # contents of the file to save. A file from any source
+            # (e.g. in a Flask form submission, a
+            # werkzeug.datastructures.FileStorage object; or if
+            # reading in a local file in a shell script, perhaps a
+            # Python file object) can be easily converted to BytesIO.
+            # This way, S3Saver isn't coupled to a Werkzeug POST
+            # request or to anything else. It just wants the file.
             temp_file = BytesIO()
             form.image.data.save(temp_file)
+
+            # Save the file. Depending on how S3Saver was initialised,
+            # could get saved to local filesystem or to S3.
             image_saver.save(
                 temp_file,
                 app.config['THINGY_IMAGE_RELATIVE_PATH'] + filename,
                 model)
 
-            # If updating an existing image, delete old original and thumbnails.
+            # If updating an existing image,
+            # delete old original and thumbnails.
             if image_orig:
                 if image_orig != model.image:
-                    filepath = path.join(app.config['UPLOADS_FOLDER'], image_orig)
+                    filepath = path.join(
+                        app.config['UPLOADS_FOLDER'],
+                        image_orig)
+
                     image_saver.delete(filepath,
                         storage_type=image_storage_type_orig,
                         bucket_name=image_bucket_name_orig)
 
-                glob_filepath_split = path.splitext(path.join(app.config['MEDIA_THUMBNAIL_FOLDER'], image_orig))
+                glob_filepath_split = path.splitext(path.join(
+                    app.config['MEDIA_THUMBNAIL_FOLDER'],
+                    image_orig))
                 glob_filepath = glob_filepath_split[0]
-                glob_matches = image_saver.find_by_path(glob_filepath,
-                                                        storage_type=image_storage_type_orig,
-                                                        bucket_name=image_bucket_name_orig)
+                glob_matches = image_saver.find_by_path(
+                    glob_filepath,
+                    storage_type=image_storage_type_orig,
+                    bucket_name=image_bucket_name_orig)
 
                 for filepath in glob_matches:
-                    image_saver.delete(filepath,
-                                       storage_type=image_storage_type_orig,
-                                       bucket_name=image_bucket_name_orig)
+                    image_saver.delete(
+                        filepath,
+                        storage_type=image_storage_type_orig,
+                        bucket_name=image_bucket_name_orig)
         else:
             model.image = image_orig
 
         # Handle image deletion
         if form.image_delete.data and image_orig:
-            filepath = path.join(app.config['UPLOADS_FOLDER'], image_orig)
+            filepath = path.join(
+                app.config['UPLOADS_FOLDER'], image_orig)
+
+            # Delete the file. In this case, we have to pass in
+            # arguments specifying whether to delete locally or on
+            # S3, as this should depend on where the file was
+            # originally saved, rather than on how S3Saver was
+            # initialised.
             image_saver.delete(filepath,
                 storage_type=image_storage_type_orig,
                 bucket_name=image_bucket_name_orig)
 
             # Also delete thumbnails
-            glob_filepath_split = path.splitext(path.join(app.config['MEDIA_THUMBNAIL_FOLDER'], image_orig))
+            glob_filepath_split = path.splitext(path.join(
+                app.config['MEDIA_THUMBNAIL_FOLDER'],
+                image_orig))
             glob_filepath = glob_filepath_split[0]
-            glob_matches = image_saver.find_by_path(glob_filepath,
-                                                    storage_type=image_storage_type_orig,
-                                                    bucket_name=image_bucket_name_orig)
+
+            # S3Saver can search for files too. When searching locally,
+            # it uses glob(); when searching on S3, it uses key
+            # prefixes.
+            glob_matches = image_saver.find_by_path(
+                glob_filepath,
+                storage_type=image_storage_type_orig,
+                bucket_name=image_bucket_name_orig)
 
             for filepath in glob_matches:
                 image_saver.delete(filepath,
@@ -108,9 +143,14 @@ def home():
         if form.image.data or form.image_delete.data:
             db.session.add(model)
             db.session.commit()
-            flash('Thingy %s' % (form.image_delete.data and 'deleted' or 'saved'), 'success')
+            flash('Thingy %s' % (
+                      form.image_delete.data and 'deleted' or 'saved'),
+                  'success')
         else:
-            flash('Please upload a new thingy or delete the existing thingy', 'warning')
+            flash(
+                'Please upload a new thingy or delete the ' +
+                    'existing thingy',
+                'warning')
 
         return redirect(url_for('foo.home'))
 
