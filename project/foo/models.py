@@ -20,17 +20,32 @@ class Thingy(db.Model):
     @property
     def image_url(self):
         from flask import current_app as app
-        return self.image and '%s%s' % (app.config['UPLOADS_RELATIVE_PATH'], self.image) or None
+        return (self.image
+            and '%s%s' % (
+                app.config['UPLOADS_RELATIVE_PATH'],
+                self.image)
+            or None)
 
     @property
     def image_url_storageaware(self):
         if not self.image:
             return None
 
-        if not (self.image_storage_type and self.image_storage_bucket_name):
-            return url_for('static', filename=self.image_url, _external=True)
+        if not (
+                self.image_storage_type
+                and self.image_storage_bucket_name):
+            return url_for(
+                'static',
+                filename=self.image_url,
+                _external=True)
 
         if self.image_storage_type != 's3':
-            raise ValueError('Storage type "%s" is invalid, the only supported storage type (apart from default local storage) is s3.' % self.image_storage_type)
+            raise ValueError((
+                'Storage type "%s" is invalid, the only supported ' +
+                'storage type (apart from default local storage) ' +
+                'is s3.') % self.image_storage_type)
 
-        return url_for_s3('static', bucket_name=self.image_storage_bucket_name, filename=self.image_url)
+        return url_for_s3(
+            'static',
+            bucket_name=self.image_storage_bucket_name,
+            filename=self.image_url)
