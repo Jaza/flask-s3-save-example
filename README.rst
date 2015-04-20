@@ -73,3 +73,11 @@ Configuration
 -------------
 
 In ``project/settings.py``, change ``USE_S3`` to ``False`` to store the image locally. If using S3, you'll need to set ``S3_BUCKET_NAME``, ``AWS_ACCESS_KEY_ID``, and ``AWS_SECRET_ACCESS_KEY`` to point to a bucket that the given AWS credentials can read / write to.
+
+
+More info
+---------
+
+For a comprehensive guide of how to use the Flask S3 tools demonstrated here, see this blog post:
+
+http://greenash.net.au/thoughts/2015/04/storing-flask-uploaded-images-and-files-on-amazon-s3/
